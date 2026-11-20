@@ -10,67 +10,98 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class SprintRepository
 {
-    public function all(Request $request, Response $response, $args): Response
-    {
-        $controller = new SprintsController();
-        $rows = $controller->get_sprints();
-        $response->getBody()->write($rows->toJson());
+    private SprintsController $controller;
 
-        return $response->withHeader('Content-Type', 'application/json');
+    public function __construct(?SprintsController $controller = null)
+    {
+        $this->controller = $controller ?? new SprintsController();
     }
 
-    public function create(Request $request, Response $response, $args): Response
+    public function all(Request $request, Response $response, array $args): Response
     {
-        try {
-            $body = $request->getBody()->getContents();
-            $data = json_decode($body, true);
-            $controller = new SprintsController();
-            $row = $controller->create_sprint($data);
-            $response->getBody()->write($row->toJson());
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
-        } catch (InvalidArgumentException $ex) {
-            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
+        $rows = $this->controller->get_sprints();
+        return $this->jsonResponse($response, $rows->toArray(), 200);
     }
 
-    public function update(Request $request, Response $response, $args): Response
+    public function find(Request $request, Response $response, array $args): Response
     {
         try {
-            $id = (int) $args['id'];
-            $body = $request->getBody()->getContents();
-            $data = json_decode($body, true);
-            $controller = new SprintsController();
-            $row = $controller->update_sprint($id, $data);
-            $response->getBody()->write($row->toJson());
-
-            return $response->withHeader('Content-Type', 'application/json');
+            $id = (int)($args['id'] ?? 0);
+            $row = $this->controller->find_sprint($id);
+            return $this->jsonResponse($response, $row->toArray(), 200);
         } catch (ModelNotFoundException $ex) {
-            $response->getBody()->write(json_encode(['error' => 'Sprint no encontrado.']));
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        } catch (InvalidArgumentException $ex) {
-            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            return $this->jsonResponse($response, ['error' => 'Sprint no encontrado.'], 404);
         }
     }
 
-    public function delete(Request $request, Response $response, $args): Response
+    public function previous(Request $request, Response $response, array $args): Response
+    {
+        $id = (int)($args['id'] ?? 0);
+        $prev = $this->controller->get_previous_sprint($id);
+
+        if ($prev === null) {
+            return $this->jsonResponse($response, ['sprint' => null, 'mensaje' => 'No hay sprint anterior.'], 200);
+        }
+
+        return $this->jsonResponse($response, $prev->toArray(), 200);
+    }
+
+    public function create(Request $request, Response $response, array $args): Response
     {
         try {
-            $id = (int) $args['id'];
-            $controller = new SprintsController();
-            $row = $controller->delete_sprint($id);
-            $response->getBody()->write($row->toJson());
-
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (ModelNotFoundException $ex) {
-            $response->getBody()->write(json_encode(['error' => 'Sprint no encontrado.']));
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+            $data = $this->parseJsonBody($request);
+            $row = $this->controller->create_sprint($data);
+            return $this->jsonResponse($response, $row->toArray(), 201);
+        } catch (InvalidArgumentException $ex) {
+            return $this->jsonResponse($response, ['error' => $ex->getMessage()], 400);
         }
+    }
+
+    public function update(Request $request, Response $response, array $args): Response
+    {
+        try {
+            $id = (int)($args['id'] ?? 0);
+            $data = $this->parseJsonBody($request);
+            $row = $this->controller->update_sprint($id, $data);
+            return $this->jsonResponse($response, $row->toArray(), 200);
+        } catch (ModelNotFoundException $ex) {
+            return $this->jsonResponse($response, ['error' => 'Sprint no encontrado.'], 404);
+        } catch (InvalidArgumentException $ex) {
+            return $this->jsonResponse($response, ['error' => $ex->getMessage()], 400);
+        }
+    }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        try {
+            $id = (int)($args['id'] ?? 0);
+            $row = $this->controller->delete_sprint($id);
+            return $this->jsonResponse($response, $row->toArray(), 200);
+        } catch (ModelNotFoundException $ex) {
+            return $this->jsonResponse($response, ['error' => 'Sprint no encontrado.'], 404);
+        }
+    }
+
+    private function parseJsonBody(Request $request): array
+    {
+        $body = $request->getBody()->getContents();
+        if (trim($body) === '') {
+            throw new InvalidArgumentException('El cuerpo de la petición JSON no puede estar vacío.');
+        }
+
+        $data = json_decode($body, true);
+        if (!is_array($data)) {
+            throw new InvalidArgumentException('JSON inválido en el cuerpo de la petición.');
+        }
+
+        return $data;
+    }
+
+    private function jsonResponse(Response $response, mixed $payload, int $status = 200): Response
+    {
+        $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
+        return $response
+            ->withStatus($status)
+            ->withHeader('Content-Type', 'application/json');
     }
 }
