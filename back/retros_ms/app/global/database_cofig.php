@@ -1,5 +1,6 @@
 <?php
----------------//ELOQUENT---------------
+
+// --------------- ELOQUENT ---------------
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
