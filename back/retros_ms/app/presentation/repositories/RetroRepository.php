@@ -2,9 +2,7 @@
 
 namespace App\Presentation\Repositories;
 
-use App\Controllers\Contracts\RetrosControllerInterface;
 use App\Controllers\RetrosController;
-use App\Validators\RetroValidator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -12,134 +10,163 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class RetroRepository
 {
-    private RetrosControllerInterface $controller;
-    private RetroValidator $validator;
-
-    public function __construct(
-        ?RetrosControllerInterface $controller = null,
-        ?RetroValidator $validator = null
-    ) {
-        $this->validator = $validator ?? new RetroValidator();
-        $this->controller = $controller ?? new RetrosController($this->validator);
-    }
-
-    public function all(Request $request, Response $response, array $args): Response
+    /**
+     * GET /retros — Listar todos los ítems de retrospectiva.
+     */
+    public function all(Request $request, Response $response, $args): Response
     {
-        $rows = $this->controller->get_retros();
-        return $this->jsonResponse($response, $rows->toArray(), 200);
+        $controller = new RetrosController();
+        $rows = $controller->get_retros();
+        $response->getBody()->write($rows->toJson());
+
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function bySprint(Request $request, Response $response, array $args): Response
-    {
-        $sprint_id = (int)($args['sprint_id'] ?? 0);
-        if ($sprint_id <= 0) {
-            return $this->jsonResponse($response, ['error' => 'El parámetro sprint_id es inválido.'], 400);
-        }
-
-        $rows = $this->controller->get_retros_by_sprint($sprint_id);
-        return $this->jsonResponse($response, $rows->toArray(), 200);
-    }
-
-    public function accionesBySprint(Request $request, Response $response, array $args): Response
-    {
-        $sprint_id = (int)($args['sprint_id'] ?? 0);
-        if ($sprint_id <= 0) {
-            return $this->jsonResponse($response, ['error' => 'El parámetro sprint_id es inválido.'], 400);
-        }
-
-        $rows = $this->controller->get_acciones_by_sprint($sprint_id);
-        return $this->jsonResponse($response, $rows->toArray(), 200);
-    }
-
-    public function find(Request $request, Response $response, array $args): Response
+    /**
+     * GET /sprints/{sprint_id}/retros — Listar los ítems de retro de un sprint.
+     */
+    public function bySprintId(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
-            $row = $this->controller->find_retro($id);
-            return $this->jsonResponse($response, $row->toArray(), 200);
-        } catch (ModelNotFoundException $ex) {
-            return $this->jsonResponse($response, ['error' => 'Ítem de retrospectiva no encontrado.'], 404);
-        }
-    }
+            $sprintId = (int) $args['sprint_id'];
+            $controller = new RetrosController();
+            $rows = $controller->get_retros_by_sprint($sprintId);
+            $response->getBody()->write($rows->toJson());
 
-    public function create(Request $request, Response $response, array $args): Response
-    {
-        try {
-            $data = $this->parseJsonBody($request);
-            $row = $this->controller->create_retro($data);
-            return $this->jsonResponse($response, $row->toArray(), 201);
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (InvalidArgumentException $ex) {
-            return $this->jsonResponse($response, ['error' => $ex->getMessage()], 400);
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     }
 
-    public function update(Request $request, Response $response, array $args): Response
+    /**
+     * GET /sprints/{sprint_id}/acciones — Listar solo las acciones de un sprint.
+     */
+    public function accionesBySprintId(Request $request, Response $response, $args): Response
+    {
+        $sprintId = (int) $args['sprint_id'];
+        $controller = new RetrosController();
+        $rows = $controller->get_acciones_by_sprint($sprintId);
+        $response->getBody()->write($rows->toJson());
+
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * GET /retros/{id} — Obtener un ítem de retro por su ID.
+     */
+    public function find(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
-            $data = $this->parseJsonBody($request);
-            $row = $this->controller->update_retro($id, $data);
-            return $this->jsonResponse($response, $row->toArray(), 200);
+            $id = (int) $args['id'];
+            $controller = new RetrosController();
+            $row = $controller->find_retro($id);
+            $response->getBody()->write($row->toJson());
+
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (ModelNotFoundException $ex) {
-            return $this->jsonResponse($response, ['error' => 'Ítem de retrospectiva no encontrado.'], 404);
-        } catch (InvalidArgumentException $ex) {
-            return $this->jsonResponse($response, ['error' => $ex->getMessage()], 400);
+            $response->getBody()->write(json_encode(['error' => 'Ítem de retrospectiva no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
     }
 
-    public function evaluate(Request $request, Response $response, array $args): Response
+    /**
+     * POST /retros — Crear un nuevo ítem de retrospectiva.
+     */
+    public function create(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
-            $data = $this->parseJsonBody($request);
+            $body = $request->getBody()->getContents();
+            $data = json_decode($body, true);
+            $controller = new RetrosController();
+            $row = $controller->create_retro($data);
+            $response->getBody()->write($row->toJson());
 
-            if (!array_key_exists('cumplida', $data)) {
-                throw new InvalidArgumentException('El campo cumplida es obligatorio (true o false).');
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+        } catch (InvalidArgumentException $ex) {
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    /**
+     * PUT /retros/{id} — Actualizar un ítem de retrospectiva.
+     */
+    public function update(Request $request, Response $response, $args): Response
+    {
+        try {
+            $id = (int) $args['id'];
+            $body = $request->getBody()->getContents();
+            $data = json_decode($body, true);
+            $controller = new RetrosController();
+            $row = $controller->update_retro($id, $data);
+            $response->getBody()->write($row->toJson());
+
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (ModelNotFoundException $ex) {
+            $response->getBody()->write(json_encode(['error' => 'Ítem de retrospectiva no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        } catch (InvalidArgumentException $ex) {
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    /**
+     * PATCH /retros/{id}/evaluar — Evaluar si una acción fue cumplida.
+     */
+    public function evaluar(Request $request, Response $response, $args): Response
+    {
+        try {
+            $id = (int) $args['id'];
+            $body = $request->getBody()->getContents();
+            $data = json_decode($body, true);
+
+            $cumplida = $data['cumplida'] ?? null;
+            if ($cumplida === null) {
+                throw new InvalidArgumentException('El campo cumplida es obligatorio.');
             }
 
-            $cumplida = $this->validator->validarBooleanoCumplida($data['cumplida']);
-            $fecha_revision = isset($data['fecha_revision']) ? (string)$data['fecha_revision'] : null;
-            $row = $this->controller->evaluate_accion($id, $cumplida, $fecha_revision);
+            $fecha_revision = $data['fecha_revision'] ?? null;
 
-            return $this->jsonResponse($response, $row->toArray(), 200);
+            $controller = new RetrosController();
+            $row = $controller->evaluate_accion($id, (bool) $cumplida, $fecha_revision);
+            $response->getBody()->write($row->toJson());
+
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (ModelNotFoundException $ex) {
-            return $this->jsonResponse($response, ['error' => 'Ítem de retrospectiva no encontrado.'], 404);
+            $response->getBody()->write(json_encode(['error' => 'Ítem de retrospectiva no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         } catch (InvalidArgumentException $ex) {
-            return $this->jsonResponse($response, ['error' => $ex->getMessage()], 400);
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     }
 
-    public function delete(Request $request, Response $response, array $args): Response
+    /**
+     * DELETE /retros/{id} — Eliminar un ítem de retrospectiva.
+     */
+    public function delete(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
-            $row = $this->controller->delete_retro($id);
-            return $this->jsonResponse($response, $row->toArray(), 200);
+            $id = (int) $args['id'];
+            $controller = new RetrosController();
+            $row = $controller->delete_retro($id);
+            $response->getBody()->write($row->toJson());
+
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (ModelNotFoundException $ex) {
-            return $this->jsonResponse($response, ['error' => 'Ítem de retrospectiva no encontrado.'], 404);
+            $response->getBody()->write(json_encode(['error' => 'Ítem de retrospectiva no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
-    }
-
-    private function parseJsonBody(Request $request): array
-    {
-        $body = $request->getBody()->getContents();
-        if (trim($body) === '') {
-            throw new InvalidArgumentException('El cuerpo de la petición JSON no puede estar vacío.');
-        }
-
-        $data = json_decode($body, true);
-        if (!is_array($data)) {
-            throw new InvalidArgumentException('JSON inválido en el cuerpo de la petición.');
-        }
-
-        return $data;
-    }
-
-    private function jsonResponse(Response $response, mixed $payload, int $status = 200): Response
-    {
-        $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
-        return $response
-            ->withStatus($status)
-            ->withHeader('Content-Type', 'application/json');
     }
 }
