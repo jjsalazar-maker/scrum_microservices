@@ -10,14 +10,8 @@ class Sprint extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id',
         'nombre',
         'fecha_inicio',
         'fecha_fin',
-        'fecha_revision',
-    ];
-
-    protected $casts = [
-        'id' => 'integer',
     ];
 }
