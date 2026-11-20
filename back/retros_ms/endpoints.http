@@ -1,73 +1,131 @@
-@baseUrl = http://127.0.0.1:8000
+### ==================== SPRINTS ====================
 
-### =========================================
-### RETRO ITEMS (Persona 2)
-### =========================================
+### Listar todos los sprints
+GET http://localhost/scrum_microservices/back/retros_ms/public/sprints
+Content-Type: application/json
 
-### 1. Listar todos los ítems de retrospectiva
-GET {{baseUrl}}/retros
-Accept: application/json
+###
 
-### 2. Listar ítems de retrospectiva de un sprint específico
-GET {{baseUrl}}/sprints/1/retros
-Accept: application/json
-
-### 3. Listar solo las acciones de un sprint (seguimiento de sprint anterior)
-GET {{baseUrl}}/sprints/1/acciones
-Accept: application/json
-
-### 4. Obtener un ítem de retrospectiva por ID
-GET {{baseUrl}}/retros/1
-Accept: application/json
-
-### 5. Crear un nuevo ítem de retrospectiva (logro)
-POST {{baseUrl}}/retros
+### Crear un sprint
+POST http://localhost/scrum_microservices/back/retros_ms/public/sprints
 Content-Type: application/json
 
 {
-  "sprint_id": 1,
-  "categoria": "logro",
-  "descripcion": "Se completaron todas las historias comprometidas del sprint."
+    "nombre": "Sprint 1",
+    "fecha_inicio": "2026-11-20",
+    "fecha_fin": "2026-12-04"
 }
 
-### 6. Crear una nueva acción con fecha de revisión
-POST {{baseUrl}}/retros
+###
+
+### Actualizar un sprint
+PUT http://localhost/scrum_microservices/back/retros_ms/public/sprints/1
 Content-Type: application/json
 
 {
-  "sprint_id": 1,
-  "categoria": "accion",
-  "descripcion": "Automatizar pruebas de integración antes del cierre del sprint.",
-  "fecha_revision": "2026-11-30"
+    "nombre": "Sprint 1 - Revisado",
+    "fecha_inicio": "2026-11-20",
+    "fecha_fin": "2026-12-06"
 }
 
-### 7. Actualizar un ítem de retrospectiva
-PUT {{baseUrl}}/retros/1
+###
+
+### Eliminar un sprint
+DELETE http://localhost/scrum_microservices/back/retros_ms/public/sprints/1
+Content-Type: application/json
+
+###
+
+### ==================== RETROS ====================
+
+### Listar todos los ítems de retrospectiva
+GET http://localhost/scrum_microservices/back/retros_ms/public/retros
+Content-Type: application/json
+
+###
+
+### Obtener un ítem de retro por ID
+GET http://localhost/scrum_microservices/back/retros_ms/public/retros/1
+Content-Type: application/json
+
+###
+
+### Crear un ítem de retro (tipo acción)
+POST http://localhost/scrum_microservices/back/retros_ms/public/retros
 Content-Type: application/json
 
 {
-  "categoria": "impedimento",
-  "descripcion": "Falta de documentación actualizada en los endpoints.",
-  "fecha_revision": "2026-12-05"
+    "sprint_id": 1,
+    "categoria": "accion",
+    "descripcion": "Mejorar la cobertura de pruebas unitarias",
+    "cumplida": false,
+    "fecha_revision": "2026-12-04"
 }
 
-### 8. Evaluar una acción (marcar como cumplida)
-PATCH {{baseUrl}}/retros/2/evaluar
+###
+
+### Crear un ítem de retro (tipo logro)
+POST http://localhost/scrum_microservices/back/retros_ms/public/retros
 Content-Type: application/json
 
 {
-  "cumplida": true,
-  "fecha_revision": "2026-11-20"
+    "sprint_id": 1,
+    "categoria": "logro",
+    "descripcion": "Se entregó el módulo de autenticación a tiempo"
 }
 
-### 9. Evaluar una acción (marcar como no cumplida; usa fecha actual por defecto)
-PATCH {{baseUrl}}/retros/2/evaluar
+###
+
+### Crear un ítem de retro (tipo impedimento)
+POST http://localhost/scrum_microservices/back/retros_ms/public/retros
 Content-Type: application/json
 
 {
-  "cumplida": false
+    "sprint_id": 1,
+    "categoria": "impedimento",
+    "descripcion": "El servidor de staging estuvo caído 2 días"
 }
 
-### 10. Eliminar un ítem de retrospectiva
-DELETE {{baseUrl}}/retros/1
-Accept: application/json
+###
+
+### Actualizar un ítem de retro
+PUT http://localhost/scrum_microservices/back/retros_ms/public/retros/1
+Content-Type: application/json
+
+{
+    "categoria": "accion",
+    "descripcion": "Mejorar cobertura de pruebas al 80%",
+    "cumplida": false,
+    "fecha_revision": "2026-12-10"
+}
+
+###
+
+### Evaluar una acción (marcar como cumplida)
+PATCH http://localhost/scrum_microservices/back/retros_ms/public/retros/1/evaluar
+Content-Type: application/json
+
+{
+    "cumplida": true,
+    "fecha_revision": "2026-12-04"
+}
+
+###
+
+### Eliminar un ítem de retro
+DELETE http://localhost/scrum_microservices/back/retros_ms/public/retros/1
+Content-Type: application/json
+
+###
+
+### ==================== RETROS POR SPRINT ====================
+
+### Listar retros de un sprint específico
+GET http://localhost/scrum_microservices/back/retros_ms/public/sprints/1/retros
+Content-Type: application/json
+
+###
+
+### Listar solo las acciones de un sprint
+GET http://localhost/scrum_microservices/back/retros_ms/public/sprints/1/acciones
+Content-Type: application/json
