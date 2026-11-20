@@ -9,8 +9,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class SprintRepository
 {
-
-    public function all(Request $request, Response $response, $args): Response
+    public function all(Request $request, Response $response, array $args): Response
     {
         $controller = new SprintsController();
         $rows = $controller->get_sprints();
@@ -18,25 +17,52 @@ class SprintRepository
         return $response->withHeader("Content-Type", "application/json");
     }
 
+    public function find(Request $request, Response $response, array $args): Response
+    {
+        try {
+            $id = (int)($args['id'] ?? 0);
+            $controller = new SprintsController();
+            $row = $controller->find_sprint($id);
+            $response->getBody()->write($row->toJson());
+            return $response->withHeader("Content-Type", "application/json");
+        } catch (ModelNotFoundException $ex) {
+            return $response->withStatus(404);
+        }
+    }
 
-    public function create(Request $request, Response $response, $args): Response
+    public function previous(Request $request, Response $response, array $args): Response
+    {
+        $id = (int)($args['id'] ?? 0);
+        $controller = new SprintsController();
+        $prev = $controller->get_previous_sprint($id);
+
+        if ($prev === null) {
+            $response->getBody()->write(json_encode(['sprint' => null, 'mensaje' => 'No hay sprint anterior.']));
+            return $response->withHeader("Content-Type", "application/json");
+        }
+
+        $response->getBody()->write($prev->toJson());
+        return $response->withHeader("Content-Type", "application/json");
+    }
+
+    public function create(Request $request, Response $response, array $args): Response
     {
         try {
             $body = $request->getBody()->getContents();
             $data = json_decode($body, true);
-            $controller = new UsersController();
+            $controller = new SprintsController();
             $row = $controller->create_sprint($data);
             $response->getBody()->write($row->toJson());
-            return $response->withHeader("Content-Type", "application/json");
+            return $response->withHeader("Content-Type", "application/json")->withStatus(201);
         } catch (ModelNotFoundException $ex) {
             return $response->withStatus(406);
         }
     }
 
-    public function update(Request $request, Response $response, $args): Response
+    public function update(Request $request, Response $response, array $args): Response
     {
         try {
-            $id = $args['id'];
+            $id = (int)($args['id'] ?? 0);
             $body = $request->getBody()->getContents();
             $data = json_decode($body, true);
             $controller = new SprintsController();
@@ -48,10 +74,10 @@ class SprintRepository
         }
     }
 
-    public function delete(Request $request, Response $response, $args): Response
+    public function delete(Request $request, Response $response, array $args): Response
     {
         try {
-            $id = $args['id'];
+            $id = (int)($args['id'] ?? 0);
             $controller = new SprintsController();
             $row = $controller->delete($id);
             $response->getBody()->write($row->toJson());
