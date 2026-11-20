@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Nuevo ítem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+    <header>
+        <h1 class="animacion-entrada">REGISTRO DE RETROSPECTIVAS</h1>
+        <p>Seguimiento de sprints, logros, impedimentos y acciones del equipo.</p>
+    </header>
+
+    <nav>
+        <ul class="menu-flex">
+            <li><a href="index.html">Sprints</a></li>
+            <li><a href="sprint_form.html">Nuevo sprint</a></li>
+        </ul>
+    </nav>
+
+    <main class="contenedor">
+        <div class="encabezado-pagina">
+            <h2 id="titulo-formulario">Nuevo ítem</h2>
+            <a id="link-volver" class="btn btn--secundario" href="index.html">Volver a la retrospectiva</a>
+        </div>
+
+        <div id="mensajes"></div>
+
+        <form class="formulario" id="form-item">
+            <div class="campo">
+                <label for="categoria">Categoría</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="logro">Logro</option>
+                    <option value="impedimento">Impedimento</option>
+                    <option value="accion">Acción</option>
+                    <option value="comentario">Comentario</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+            </div>
+
+            <div class="campo">
+                <label for="fecha_revision">
+                    Fecha de revisión <span class="campo__ayuda">(opcional, útil para acciones)</span>
+                </label>
+                <input type="date" id="fecha_revision" name="fecha_revision">
+            </div>
+
+            <div class="formulario__botones">
+                <button type="submit" class="btn btn--primario">Guardar</button>
+                <a id="link-cancelar" class="btn btn--secundario" href="index.html">Cancelar</a>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p>Grupo 1 DNJ</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/item_form.js"></script>
+</body>
+
+</html>
