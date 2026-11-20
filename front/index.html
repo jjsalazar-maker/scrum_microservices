@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprints</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+    <header>
+        <h1 class="animacion-entrada">REGISTRO DE RETROSPECTIVAS</h1>
+        <p>Seguimiento de sprints, logros, impedimentos y acciones del equipo.</p>
+    </header>
+
+    <nav>
+        <ul class="menu-flex">
+            <li><a href="index.html">Sprints</a></li>
+            <li><a href="sprint_form.html">Nuevo sprint</a></li>
+        </ul>
+    </nav>
+
+    <main class="contenedor">
+        <div class="encabezado-pagina">
+            <h2>Sprints</h2>
+            <a class="btn btn--primario" href="sprint_form.html">+ Nuevo sprint</a>
+        </div>
+
+        <div id="mensajes"></div>
+        <div id="contenido-sprints">
+            <p class="vacio">Cargando sprints...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>Grupo 1 DNJ</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/sprints.js"></script>
+</body>
+
+</html>
