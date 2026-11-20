@@ -4,11 +4,25 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../app/global/database_config.php';
+
+$cors = require __DIR__.'/../app/middlewares/cors.php';
+$sprintss_routers = require __DIR__.'/../app/presentation/routers/endpoints.php';
 
 $app = AppFactory::create();
 
 $app->get('/', function (Request $request, Response $response, $args) {
     $response->getBody()->write("Hello world!");
+    return $response;
+});
+
+$app->post('/suma', function (Request $request, Response $response, $args) {
+    $body = $request->getBody()->getContents();
+    $data = json_decode($body, true);
+    $nombre = $data["nombre"];
+    $fecha_inicio = $data["fecha_inicio"];
+    $fecha_fin = $data["fecha_fin"] 
+    $response->getBody()->write("$num1 + $num2 = $sum");
     return $response;
 });
 

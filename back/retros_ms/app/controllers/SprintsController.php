@@ -10,7 +10,7 @@ class SprintsController
 {
     function get_sprints(): Collection
     {
-        return Spirnt::all();
+        return Sprint::all();
     }
 
     function find_sprint(int $id): Sprint
@@ -26,7 +26,7 @@ class SprintsController
         $sprint->fecha_inicio = $data["fecha_inicio"];
         $sprint->fecha_fin = $data["fecha_fin"];
         $sprint->save();
-        return $user;
+        return $sprint;
     }
 
     function update(int $id, array $data):Sprint{
@@ -38,9 +38,14 @@ class SprintsController
         return $sprint;
     }
 
-    function delete(int $id):User{
+    function delete(int $id):Sprint{
         $sprint = Sprint::findOrFail($id);
         $sprint->delete();
         return $sprint;
+    }
+
+    function get_previous_sprint():{
+
+        
     }
 }
