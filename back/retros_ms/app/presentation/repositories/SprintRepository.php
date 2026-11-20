@@ -1,6 +1,6 @@
 <?php
 
-namespace app\presentation\repositories;
+namespace App\Presentation\Repositories;
 
 use App\Controllers\SprintsController;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

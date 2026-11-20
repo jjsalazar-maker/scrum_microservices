@@ -1,8 +1,8 @@
 <?php
 
-namespace app\controllers;
+namespace App\Controllers;
 
-use app\models\Sprint;
+use App\Models\Sprint;
 use Illuminate\Database\Eloquent\Collection;
 
 class SprintsController
