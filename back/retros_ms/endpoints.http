@@ -7,7 +7,7 @@
 @accionId = 2
 
 ### =========================================
-### SPRINTS (Persona 1)
+### SPRINTS (Juanjo)
 ### =========================================
 
 ### Listar todos los sprints
@@ -47,7 +47,7 @@ DELETE {{baseUrl}}/sprints/{{sprintId}}
 Accept: application/json
 
 ### =========================================
-### RETRO ITEMS (Persona 2)
+### RETRO ITEMS (David)
 ### =========================================
 
 ### Listar todos los ítems de retrospectiva
