@@ -1,0 +1,73 @@
+@baseUrl = http://127.0.0.1:8000
+
+### =========================================
+### RETRO ITEMS (Persona 2)
+### =========================================
+
+### 1. Listar todos los ítems de retrospectiva
+GET {{baseUrl}}/retros
+Accept: application/json
+
+### 2. Listar ítems de retrospectiva de un sprint específico
+GET {{baseUrl}}/sprints/1/retros
+Accept: application/json
+
+### 3. Listar solo las acciones de un sprint (seguimiento de sprint anterior)
+GET {{baseUrl}}/sprints/1/acciones
+Accept: application/json
+
+### 4. Obtener un ítem de retrospectiva por ID
+GET {{baseUrl}}/retros/1
+Accept: application/json
+
+### 5. Crear un nuevo ítem de retrospectiva (logro)
+POST {{baseUrl}}/retros
+Content-Type: application/json
+
+{
+  "sprint_id": 1,
+  "categoria": "logro",
+  "descripcion": "Se completaron todas las historias comprometidas del sprint."
+}
+
+### 6. Crear una nueva acción con fecha de revisión
+POST {{baseUrl}}/retros
+Content-Type: application/json
+
+{
+  "sprint_id": 1,
+  "categoria": "accion",
+  "descripcion": "Automatizar pruebas de integración antes del cierre del sprint.",
+  "fecha_revision": "2026-11-30"
+}
+
+### 7. Actualizar un ítem de retrospectiva
+PUT {{baseUrl}}/retros/1
+Content-Type: application/json
+
+{
+  "categoria": "impedimento",
+  "descripcion": "Falta de documentación actualizada en los endpoints.",
+  "fecha_revision": "2026-12-05"
+}
+
+### 8. Evaluar una acción (marcar como cumplida)
+PATCH {{baseUrl}}/retros/2/evaluar
+Content-Type: application/json
+
+{
+  "cumplida": true,
+  "fecha_revision": "2026-11-20"
+}
+
+### 9. Evaluar una acción (marcar como no cumplida; usa fecha actual por defecto)
+PATCH {{baseUrl}}/retros/2/evaluar
+Content-Type: application/json
+
+{
+  "cumplida": false
+}
+
+### 10. Eliminar un ítem de retrospectiva
+DELETE {{baseUrl}}/retros/1
+Accept: application/json
