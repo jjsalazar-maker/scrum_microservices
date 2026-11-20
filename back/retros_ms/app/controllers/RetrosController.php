@@ -2,20 +2,20 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Contracts\RetrosControllerInterface;
 use App\Models\Retro;
-use DateTime;
+use App\Validators\RetroValidator;
 use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 
-class RetrosController
+class RetrosController implements RetrosControllerInterface
 {
-    public const CATEGORIAS_VALIDAS = [
-        'accion',
-        'logro',
-        'impedimento',
-        'comentario',
-        'otro',
-    ];
+    private RetroValidator $validator;
+
+    public function __construct(?RetroValidator $validator = null)
+    {
+        $this->validator = $validator ?? new RetroValidator();
+    }
 
     public function get_retros(): Collection
     {
@@ -44,15 +44,11 @@ class RetrosController
 
     public function create_retro(array $data): Retro
     {
-        $sprint_id = isset($data['sprint_id']) ? (int)$data['sprint_id'] : 0;
-        if ($sprint_id <= 0) {
-            throw new InvalidArgumentException('El campo sprint_id es obligatorio y debe ser un entero positivo.');
-        }
-
-        $categoria = $this->validarCategoria($data['categoria'] ?? '');
-        $descripcion = $this->validarDescripcion($data['descripcion'] ?? '');
-        $fecha_revision = $this->validarFechaRevision($data['fecha_revision'] ?? null);
-        $cumplida = $this->normalizarCumplida($categoria, $data['cumplida'] ?? null);
+        $sprint_id = $this->validator->validarSprintId($data['sprint_id'] ?? 0);
+        $categoria = $this->validator->validarCategoria($data['categoria'] ?? '');
+        $descripcion = $this->validator->validarDescripcion($data['descripcion'] ?? '');
+        $fecha_revision = $this->validator->validarFechaRevision($data['fecha_revision'] ?? null);
+        $cumplida = $this->validator->normalizarCumplida($categoria, $data['cumplida'] ?? null);
 
         $retro = new Retro();
         $retro->sprint_id = $sprint_id;
@@ -69,13 +65,13 @@ class RetrosController
     {
         $retro = Retro::findOrFail($id);
 
-        $categoria = $this->validarCategoria($data['categoria'] ?? $retro->categoria);
-        $descripcion = $this->validarDescripcion($data['descripcion'] ?? $retro->descripcion);
+        $categoria = $this->validator->validarCategoria($data['categoria'] ?? $retro->categoria);
+        $descripcion = $this->validator->validarDescripcion($data['descripcion'] ?? $retro->descripcion);
         $fecha_revision = array_key_exists('fecha_revision', $data)
-            ? $this->validarFechaRevision($data['fecha_revision'])
+            ? $this->validator->validarFechaRevision($data['fecha_revision'])
             : $retro->fecha_revision;
         $cumplida = array_key_exists('cumplida', $data)
-            ? $this->normalizarCumplida($categoria, $data['cumplida'])
+            ? $this->validator->normalizarCumplida($categoria, $data['cumplida'])
             : ($categoria === 'accion' ? $retro->cumplida : null);
 
         $retro->categoria = $categoria;
@@ -96,7 +92,7 @@ class RetrosController
         }
 
         $fecha = ($fecha_revision !== null && trim($fecha_revision) !== '')
-            ? $this->validarFechaRevision($fecha_revision)
+            ? $this->validator->validarFechaRevision($fecha_revision)
             : date('Y-m-d');
 
         $retro->cumplida = $cumplida;
@@ -112,67 +108,5 @@ class RetrosController
         $retro->delete();
 
         return $retro;
-    }
-
-    private function validarCategoria(mixed $categoria): string
-    {
-        $valor = is_string($categoria) ? trim($categoria) : '';
-        if (!in_array($valor, self::CATEGORIAS_VALIDAS, true)) {
-            throw new InvalidArgumentException(
-                'Categoría inválida. Valores permitidos: ' . implode(', ', self::CATEGORIAS_VALIDAS) . '.'
-            );
-        }
-
-        return $valor;
-    }
-
-    private function validarDescripcion(mixed $descripcion): string
-    {
-        $valor = is_string($descripcion) ? trim($descripcion) : '';
-        if ($valor === '') {
-            throw new InvalidArgumentException('La descripción es obligatoria.');
-        }
-
-        return $valor;
-    }
-
-    private function validarFechaRevision(mixed $fecha): ?string
-    {
-        if ($fecha === null || (is_string($fecha) && trim($fecha) === '')) {
-            return null;
-        }
-
-        if (!is_string($fecha)) {
-            throw new InvalidArgumentException('La fecha_revision debe tener formato YYYY-MM-DD.');
-        }
-
-        $valor = trim($fecha);
-        $dt = DateTime::createFromFormat('Y-m-d', $valor);
-        if (!$dt || $dt->format('Y-m-d') !== $valor) {
-            throw new InvalidArgumentException('La fecha_revision debe tener formato YYYY-MM-DD.');
-        }
-
-        return $valor;
-    }
-
-    private function normalizarCumplida(string $categoria, mixed $cumplida): ?bool
-    {
-        if ($categoria !== 'accion' || $cumplida === null || $cumplida === '') {
-            return null;
-        }
-
-        if (is_bool($cumplida)) {
-            return $cumplida;
-        }
-
-        if ($cumplida === 1 || $cumplida === '1' || $cumplida === 'true') {
-            return true;
-        }
-
-        if ($cumplida === 0 || $cumplida === '0' || $cumplida === 'false') {
-            return false;
-        }
-
-        throw new InvalidArgumentException('El campo cumplida debe ser booleano (true/false) o null.');
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Presentation\Repositories;
 
+use App\Controllers\Contracts\RetrosControllerInterface;
 use App\Controllers\RetrosController;
+use App\Validators\RetroValidator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -10,11 +12,15 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class RetroRepository
 {
-    private RetrosController $controller;
+    private RetrosControllerInterface $controller;
+    private RetroValidator $validator;
 
-    public function __construct(?RetrosController $controller = null)
-    {
-        $this->controller = $controller ?? new RetrosController();
+    public function __construct(
+        ?RetrosControllerInterface $controller = null,
+        ?RetroValidator $validator = null
+    ) {
+        $this->validator = $validator ?? new RetroValidator();
+        $this->controller = $controller ?? new RetrosController($this->validator);
     }
 
     public function all(Request $request, Response $response, array $args): Response
@@ -91,17 +97,7 @@ class RetroRepository
                 throw new InvalidArgumentException('El campo cumplida es obligatorio (true o false).');
             }
 
-            $rawCumplida = $data['cumplida'];
-            if (is_bool($rawCumplida)) {
-                $cumplida = $rawCumplida;
-            } elseif ($rawCumplida === 1 || $rawCumplida === '1' || $rawCumplida === 'true') {
-                $cumplida = true;
-            } elseif ($rawCumplida === 0 || $rawCumplida === '0' || $rawCumplida === 'false') {
-                $cumplida = false;
-            } else {
-                throw new InvalidArgumentException('El campo cumplida debe ser booleano (true o false).');
-            }
-
+            $cumplida = $this->validator->validarBooleanoCumplida($data['cumplida']);
             $fecha_revision = isset($data['fecha_revision']) ? (string)$data['fecha_revision'] : null;
             $row = $this->controller->evaluate_accion($id, $cumplida, $fecha_revision);
 
