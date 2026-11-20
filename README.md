@@ -83,30 +83,74 @@ scrum_microservices/
 
 Categorías permitidas: `logro`, `impedimento`, `accion`, `comentario`, `otro`.
 
-## Instalación y Ejecución
+## Instalación desde Cero (en una máquina sin nada instalado)
+
+### 0. Requisitos previos (Windows)
+
+1. **Instalar Git:**
+   * Descargar e instalar desde [git-scm.com/downloads](https://git-scm.com/downloads) (dejar las opciones por defecto).
+   * Verificar en una terminal (PowerShell):
+     ```powershell
+     git --version
+     ```
+
+2. **Instalar XAMPP (incluye PHP 8.2+ y MySQL):**
+   * Descargar e instalar desde [apachefriends.org](https://www.apachefriends.org) (recomendado PHP 8.2 o superior).
+   * Agregar PHP al `PATH` de Windows (si no se agregó automáticamente):
+     * Abrir *Variables de entorno* → `Path` → agregar `C:\xampp\php`.
+   * Habilitar la extensión `zip` en `C:\xampp\php\php.ini` (necesaria para Composer):
+     * Abrir `C:\xampp\php\php.ini`, buscar `;extension=zip` y quitar el punto y coma para dejarlo como `extension=zip`.
+   * Verificar en una **nueva** terminal:
+     ```powershell
+     php -v
+     ```
+
+3. **Instalar Composer:**
+   * Descargar y ejecutar `Composer-Setup.exe` desde [getcomposer.org/download](https://getcomposer.org/download/).
+   * Cuando el instalador pida el ejecutable de PHP, seleccionar `C:\xampp\php\php.exe`.
+   * Verificar en una **nueva** terminal:
+     ```powershell
+     composer --version
+     ```
+
+4. **Clonar el repositorio:**
+   ```powershell
+   git clone https://github.com/jjsalazar-maker/scrum_microservices.git
+   cd scrum_microservices
+   ```
+
+---
 
 ### 1. Base de datos
-1. Inicia **MySQL** en XAMPP.
-2. Importa el archivo `database/registro_retro_db.sql` desde phpMyAdmin o consola MySQL.
+1. Abrir **XAMPP Control Panel** e iniciar **MySQL** (y **Apache** si deseas usar phpMyAdmin).
+2. Importar el archivo `database/registro_retro_db.sql`:
+   * **Opción A (phpMyAdmin):** abrir `http://localhost/phpmyadmin` → pestaña **Importar** → seleccionar `database/registro_retro_db.sql` → **Continuar**.
+   * **Opción B (consola):**
+     ```powershell
+     C:\xampp\mysql\bin\mysql.exe -u root < database\registro_retro_db.sql
+     ```
 3. Si tus credenciales de MySQL son distintas a `root` sin contraseña, ajústalas en `back/retros_ms/app/global/database_config.php`.
 
 ### 2. Backend (API Slim 4)
 ```powershell
-cd back/retros_ms
+cd back\retros_ms
 composer install
 php -S 127.0.0.1:8000 -t public
 ```
-> **Nota:** Si usas PHP 8.0, ejecuta `composer update` en lugar de `composer install`. Si PHP indica que falta la extensión `zip`, habilita `extension=zip` en `php.ini` o ejecuta Composer con `php -d extension=zip`.
+> **Notas:**
+> * Deja esta terminal abierta mientras usas la aplicación.
+> * Si tienes PHP 8.0 en lugar de PHP 8.2+, ejecuta `composer update` en vez de `composer install`.
+> * Si Composer indica que falta la extensión `zip`, ejecuta `php -d extension=zip C:\ProgramData\ComposerSetup\bin\composer.phar install`.
 
 ### 3. Frontend
-En otra terminal (o usando la extensión **Live Server** de VS Code sobre `front/index.html`):
+En una **segunda terminal** (o usando la extensión **Live Server** de VS Code sobre `front/index.html`):
 ```powershell
 cd front
 php -S 127.0.0.1:5500
 ```
 Abre en el navegador: `http://127.0.0.1:5500/index.html`.
 
-### 4. Pruebas de API
+### 4. Pruebas de API (opcional)
 Puedes probar todos los endpoints directamente desde VS Code (con la extensión **REST Client**) abriendo `back/retros_ms/endpoints.http`.
 
 ## Equipo
