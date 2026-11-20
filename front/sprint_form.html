@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Nuevo sprint</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+    <header>
+        <h1 class="animacion-entrada">REGISTRO DE RETROSPECTIVAS</h1>
+        <p>Seguimiento de sprints, logros, impedimentos y acciones del equipo.</p>
+    </header>
+
+    <nav>
+        <ul class="menu-flex">
+            <li><a href="index.html">Sprints</a></li>
+            <li><a href="sprint_form.html">Nuevo sprint</a></li>
+        </ul>
+    </nav>
+
+    <main class="contenedor">
+        <div class="encabezado-pagina">
+            <h1 id="titulo-formulario">Nuevo sprint</h1>
+            <a class="btn btn--secundario" href="index.html">Volver</a>
+        </div>
+
+        <div id="mensajes"></div>
+
+        <form class="formulario" id="form-sprint">
+            <div class="campo">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" maxlength="100" required>
+            </div>
+
+            <div class="campo">
+                <label for="fecha_inicio">Fecha de inicio</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+            </div>
+
+            <div class="campo">
+                <label for="fecha_fin">Fecha de fin</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" required>
+            </div>
+
+            <div class="formulario__botones">
+                <button type="submit" class="btn btn--primario">Guardar</button>
+                <a class="btn btn--secundario" href="index.html">Cancelar</a>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p>Grupo 1 DNJ</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/sprint_form.js"></script>
+</body>
+
+</html>
