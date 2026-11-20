@@ -4,48 +4,22 @@ namespace App\Presentation\Repositories;
 
 use App\Controllers\SprintsController;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class SprintRepository
 {
-    public function all(Request $request, Response $response, array $args): Response
+    public function all(Request $request, Response $response, $args): Response
     {
         $controller = new SprintsController();
         $rows = $controller->get_sprints();
         $response->getBody()->write($rows->toJson());
-        return $response->withHeader("Content-Type", "application/json");
+
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function find(Request $request, Response $response, array $args): Response
-    {
-        try {
-            $id = (int)($args['id'] ?? 0);
-            $controller = new SprintsController();
-            $row = $controller->find_sprint($id);
-            $response->getBody()->write($row->toJson());
-            return $response->withHeader("Content-Type", "application/json");
-        } catch (ModelNotFoundException $ex) {
-            return $response->withStatus(404);
-        }
-    }
-
-    public function previous(Request $request, Response $response, array $args): Response
-    {
-        $id = (int)($args['id'] ?? 0);
-        $controller = new SprintsController();
-        $prev = $controller->get_previous_sprint($id);
-
-        if ($prev === null) {
-            $response->getBody()->write(json_encode(['sprint' => null, 'mensaje' => 'No hay sprint anterior.']));
-            return $response->withHeader("Content-Type", "application/json");
-        }
-
-        $response->getBody()->write($prev->toJson());
-        return $response->withHeader("Content-Type", "application/json");
-    }
-
-    public function create(Request $request, Response $response, array $args): Response
+    public function create(Request $request, Response $response, $args): Response
     {
         try {
             $body = $request->getBody()->getContents();
@@ -53,37 +27,50 @@ class SprintRepository
             $controller = new SprintsController();
             $row = $controller->create_sprint($data);
             $response->getBody()->write($row->toJson());
-            return $response->withHeader("Content-Type", "application/json")->withStatus(201);
-        } catch (ModelNotFoundException $ex) {
-            return $response->withStatus(406);
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+        } catch (InvalidArgumentException $ex) {
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     }
 
-    public function update(Request $request, Response $response, array $args): Response
+    public function update(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
+            $id = (int) $args['id'];
             $body = $request->getBody()->getContents();
             $data = json_decode($body, true);
             $controller = new SprintsController();
-            $row = $controller->update($id, $data);
+            $row = $controller->update_sprint($id, $data);
             $response->getBody()->write($row->toJson());
-            return $response->withHeader("Content-Type", "application/json");
+
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (ModelNotFoundException $ex) {
-            return $response->withStatus(404);
+            $response->getBody()->write(json_encode(['error' => 'Sprint no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        } catch (InvalidArgumentException $ex) {
+            $response->getBody()->write(json_encode(['error' => $ex->getMessage()]));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     }
 
-    public function delete(Request $request, Response $response, array $args): Response
+    public function delete(Request $request, Response $response, $args): Response
     {
         try {
-            $id = (int)($args['id'] ?? 0);
+            $id = (int) $args['id'];
             $controller = new SprintsController();
-            $row = $controller->delete($id);
+            $row = $controller->delete_sprint($id);
             $response->getBody()->write($row->toJson());
-            return $response->withHeader("Content-Type", "application/json");
+
+            return $response->withHeader('Content-Type', 'application/json');
         } catch (ModelNotFoundException $ex) {
-            return $response->withStatus(404);
+            $response->getBody()->write(json_encode(['error' => 'Sprint no encontrado.']));
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
     }
 }
