@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Retrospectiva</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+    <header>
+        <h1 class="animacion-entrada">REGISTRO DE RETROSPECTIVAS</h1>
+        <p>Seguimiento de sprints, logros, impedimentos y acciones del equipo.</p>
+    </header>
+
+    <nav>
+        <ul class="menu-flex">
+            <li><a href="index.html">Sprints</a></li>
+            <li><a href="sprint_form.html">Nuevo sprint</a></li>
+        </ul>
+    </nav>
+
+    <main class="contenedor">
+        <div class="encabezado-pagina">
+            <h2 id="titulo-retro">Retrospectiva</h2>
+            <div class="item__botones">
+                <button type="button" id="btn-cargar-anteriores" class="btn btn--primario"
+                    style="display:none;"></button>
+                <a class="btn btn--secundario" href="index.html">Volver a sprints</a>
+            </div>
+        </div>
+
+        <div id="mensajes"></div>
+
+        <!-- Panel de seguimiento de acciones del sprint anterior -->
+        <div id="panel-anteriores" class="tarjeta tarjeta--accion" style="display:none;">
+            <div class="tarjeta__encabezado">
+                <h3 id="titulo-anteriores">Seguimiento de Acciones</h3>
+                <button type="button" id="btn-ocultar-anteriores"
+                    class="btn btn--secundario btn--chico">Ocultar</button>
+            </div>
+            <div id="lista-anteriores"></div>
+        </div>
+
+        <div class="columnas">
+            <div class="tarjeta tarjeta--logro">
+                <div class="tarjeta__encabezado">
+                    <h3>Logros <span class="subtitulo">Positivos</span></h3>
+                    <a id="link-agregar-logro" class="btn btn--secundario btn--chico" href="#">+ Agregar</a>
+                </div>
+                <div id="grupo-logro"></div>
+            </div>
+
+            <div class="tarjeta tarjeta--impedimento">
+                <div class="tarjeta__encabezado">
+                    <h3>Impedimentos <span class="subtitulo">A mejorar</span></h3>
+                    <a id="link-agregar-impedimento" class="btn btn--secundario btn--chico" href="#">+ Agregar</a>
+                </div>
+                <div id="grupo-impedimento"></div>
+            </div>
+
+            <div class="tarjeta tarjeta--accion">
+                <div class="tarjeta__encabezado">
+                    <h3>Acciones <span class="subtitulo">Compromisos</span></h3>
+                    <a id="link-agregar-accion" class="btn btn--secundario btn--chico" href="#">+ Agregar</a>
+                </div>
+                <div id="grupo-accion"></div>
+            </div>
+        </div>
+
+        <div class="tarjeta tarjeta--otros">
+            <div class="tarjeta__encabezado">
+                <h3>Comentarios y otros</h3>
+                <a id="link-agregar-comentario" class="btn btn--secundario btn--chico" href="#">+ Agregar</a>
+            </div>
+            <div id="grupo-otros"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Grupo 1 DNJ</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/retrospectiva.js"></script>
+</body>
+
+</html>
